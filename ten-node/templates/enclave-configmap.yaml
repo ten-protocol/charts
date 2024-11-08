@@ -1,0 +1,12 @@
+{{- if .Values.enclave.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ten-node.fullname" . }}-enclave-configmap
+  labels:
+    {{- include "ten-node.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.enclave.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}

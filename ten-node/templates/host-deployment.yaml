@@ -1,0 +1,97 @@
+{{- if .Values.host.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ten-node.fullname" . }}-host
+  labels:
+    app: {{ .Release.Name }}-host
+    {{- include "ten-node.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.host.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-host
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/host-secret.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Release.Name }}-host
+        {{- include "ten-node.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ten-node.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.host.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "ten-node.fullname" . }}-config
+      containers:
+        - name: {{ .Chart.Name }}-host
+          securityContext:
+            {{- toYaml .Values.host.securityContext | nindent 12 }}
+          image: "{{ .Values.host.image.repository }}:{{ .Values.host.image.tag }}"
+          resources:
+            {{- toYaml .Values.host.resources | nindent 12 }}
+          imagePullPolicy: {{ .Values.host.image.pullPolicy }}
+          ports:
+            {{- range .Values.host.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol | default "TCP" }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "ten-node.fullname" . }}-host
+            - secretRef:
+                name: {{ include "ten-node.fullname" . }}-host
+          env:
+            {{- if .Values.postgresql.enabled }}
+            - name: HOST_DB_POSTGRESHOST
+              value: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ include "ten-node.fullname" . }}-postgresql:5432/{{ .Values.postgresql.auth.database }}"
+            {{- end }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+          {{- if .Values.host.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.host.readinessProbe.path }}
+              port: http
+              scheme: HTTP
+            {{- with .Values.host.readinessProbe.params }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.host.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.host.livenessProbe.path }}
+              port: http
+              scheme: HTTP
+            {{- with .Values.host.livenessProbe.params }}
+            {{- end }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.host.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,120 @@
+{{- if .Values.enclave.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ten-node.fullname" . }}-enclave
+  labels:
+    app: {{ .Release.Name }}-enclave
+    {{- include "ten-node.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.enclave.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-enclave
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/enclave-secret.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Release.Name }}-enclave
+        {{- include "ten-node.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ten-node.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "ten-node.fullname" . }}-config
+        - name: enclave-config
+          configMap:
+            name: {{ include "ten-node.fullname" . }}-enclave-configmap
+      initContainers:
+        - name: wait-for-host
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until [ -n "$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')" ]; do
+                echo "Waiting for host service to get an IP address..."
+                sleep 5
+              done
+              export NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+              echo "NODE_HOSTADDRESS=$NODE_HOSTADDRESS"
+          env:
+            - name: KUBERNETES_SERVICE_HOST
+              value: {{ .Values.kubernetesServiceHost }}
+            - name: KUBERNETES_SERVICE_PORT
+              value: {{ .Values.kubernetesServicePort }}
+      containers:
+        - name: {{ .Chart.Name }}-enclave
+          securityContext:
+            {{- toYaml .Values.enclave.securityContext | nindent 12 }}
+          image: "{{ .Values.enclave.image.repository }}:{{ .Values.enclave.image.tag }}"
+          resources:
+            {{- toYaml .Values.enclave.resources | nindent 12 }}
+          imagePullPolicy: {{ .Values.enclave.image.pullPolicy }}
+          ports:
+            {{- range .Values.enclave.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol | default "TCP" }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "ten-node.fullname" . }}-config
+            - secretRef:
+                name: {{ include "ten-node.fullname" . }}-enclave-secret
+          env:
+            - name: NODE_HOSTADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+            - name: enclave-config
+              mountPath: /path/to/mount
+          {{- if .Values.enclave.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.enclave.readinessProbe.path }}
+              port: http
+              scheme: HTTP
+            {{- with .Values.enclave.readinessProbe.params }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.enclave.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.enclave.livenessProbe.path }}
+              port: http
+              scheme: HTTP
+            {{- with .Values.enclave.livenessProbe.params }}
+            {{- end }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.enclave.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
