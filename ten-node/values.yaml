@@ -1,10 +1,21 @@
+global:
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+
+# -- Overrides the chart's name
+nameOverride: ""
+
+# -- Overrides the chart's computed fullname
+fullnameOverride: ""
 enclave:
   enabled: true
   replicaCount: 1
   image:
-    repository: testnetobscuronet.azurecr.io/obscuronet/sepolia_enclave
-    tag: v0.27
+    repository: testnetobscuronet.azurecr.io/obscuronet/dev_enclave
+    tag: latest
     pullPolicy: IfNotPresent
+    imagePullSecrets: []
 
   autoscaling:
     enabled: false
@@ -19,65 +30,12 @@ enclave:
   affinity: {}
 
   env:
-    ENCLAVE_ENABLEATTESTATION: "true"
-    ENCLAVE_DB_USEINMEMORY: "false"
-    ENCLAVE_DB_EDGELESSDBHOST: "obscuronode-edgelessdb"
-    ENCLAVE_DEBUG_ENABLEDEBUGNAMESPACE: "true"
-    ENCLAVE_LOG_LEVEL: "3"
-    ENCLAVE_LOG_PATH: "sys_out"
-    ENCLAVE_RPC_BINDADDRESS: "0.0.0.0:11001"
-    ENCLAVE_RPC_TIMEOUT: "5s"
-    ENCLAVE_L1_ENABLEBLOCKVALIDATION: "false"
-    ENCLAVE_L1_GENESISJSON: "{}"
-
-  secretEnv:
-    ENCLAVE_DB_SQLITEPATH: ""
-
-  extraEnv: []
-
-  service:
-    type: ClusterIP
-    port: 11000
-
-  ports:
-    - name: rpc
-      port: 11000
-      containerPort: 11000
-
-  resources:
-    limits:
-      memory: 2Gi
-      cpu: 1000m
-    requests:
-      memory: 1Gi
-      cpu: 500m
-
-  storage:
-    storageClass: "default"
-    size: 10Gi  
-
-  kubernetesServiceHost: "kubernetes.default.svc"
-  kubernetesServicePort: "443"
-
-  serviceAccount:
-    create: true
-
-host:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: "testnetobscuronet.azurecr.io/obscuronet/dev_host"
-    tag: "latest"
-    pullPolicy: "IfNotPresent"
-  env:
     ENCLAVE_L1_ENABLEBLOCKVALIDATION: "false"
     ENCLAVE_LOG_LEVEL: "3"
     ENCLAVE_ENABLEATTESTATION: "true"
-    NODE_PRIVATEKEY: "REPLEACEME"
     HOST_LOG_LEVEL: "3"
     NETWORK_GAS_BASEFEE: "1000000000"
-    NETWORK_L1_STARTHASH: "REPLEACEME"
-    HOST_DB_POSTGRESHOST: "REPLEACEME"
+    NETWORK_L1_STARTHASH: "0xde52869dc85dca5bdd614e82c7c141bcf8a5287a63500391379f1f707ea0525a"
     NETWORK_GAS_BATCHEXECUTIONLIMIT: "300000000000"
     HOST_DB_USEINMEMORY: "false"
     NETWORK_BATCH_MAXINTERVAL: "1s"
@@ -92,7 +50,7 @@ host:
     NODE_ISGENESIS: "true"
     HOST_P2P_TIMEOUT: "10s"
     NETWORK_GENESIS: "{}"
-    NETWORK_L1_CONTRACTS_MESSAGEBUS: "REPLEACEME"
+    NETWORK_L1_CONTRACTS_MESSAGEBUS: "0x6eCd4F00A50ee607B17941AD4AfE9DFEc773e5C8"
     HOST_RPC_HTTPPORT: "80"
     HOST_P2P_DISABLED: "false"
     ENCLAVE_L1_GENESISJSON: "[]"
@@ -129,12 +87,119 @@ host:
     NETWORK_ROLLUP_MAXINTERVAL: "10m0s"
     HOST_L1_BLOBARCHIVEURL: ""
     NETWORK_CHAINID: "443"
-    NODE_ID: "0xd6bCf7694fc4Ed7c7C61B3fC5757919E237D0bf5"
+    NODE_ID: "0x3c8a281Ea7959b9f457a6939125A72C53f23433E"
+    HOST_RPC_ENABLEHTTP: "true"
+    HOST_DEBUG_ENABLEDEBUGNAMESPACE: "true"
+
+  readinessProbe:
+    enabled: false
+  livenessProbe:
+    enabled: false
+
+  secretEnv:
+    ENCLAVE_DB_SQLITEPATH: ""
+
+  extraEnv: []
+
+  service:
+    type: ClusterIP
+    port: 11000
+
+  ports:
+    - name: rpc
+      port: 11000
+      containerPort: 11000
+
+  resources:
+    limits:
+      memory: 5Gi
+      cpu: 1000m
+    requests:
+      memory: 5Gi
+      cpu: 500m
+
+  storage:
+    storageClass: "default"
+    size: 10Gi  
+
+  serviceAccount:
+    create: true
+
+host:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "testnetobscuronet.azurecr.io/obscuronet/dev_host"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+    imagePullSecrets: []
+  readinessProbe:
+    enabled: false
+  livenessProbe:
+    enabled: false
+  env:
+    ENCLAVE_L1_ENABLEBLOCKVALIDATION: "false"
+    ENCLAVE_LOG_LEVEL: "3"
+    ENCLAVE_ENABLEATTESTATION: "true"
+    HOST_LOG_LEVEL: "3"
+    NETWORK_GAS_BASEFEE: "1000000000"
+    NETWORK_L1_STARTHASH: "0xde52869dc85dca5bdd614e82c7c141bcf8a5287a63500391379f1f707ea0525a"
+    NETWORK_GAS_BATCHEXECUTIONLIMIT: "300000000000"
+    HOST_DB_USEINMEMORY: "false"
+    NETWORK_BATCH_MAXINTERVAL: "1s"
+    HOST_L1_BEACONURL: "dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600"
+    HOST_LOG_PATH: "sys_out"
+    HOST_DB_SQLITEPATH: ""
+    HOST_DEBUG_ENABLEMETRICS: "true"
+    HOST_RPC_ADDRESS: "0.0.0.0"
+    NETWORK_ROLLUP_INTERVAL: "15m0s"
+    NETWORK_L1_CONTRACTS_BRIDGE: "0x0000000000000000000000000000000000000000"
+    ENCLAVE_DB_SQLITEPATH: ""
+    NODE_ISGENESIS: "true"
+    HOST_P2P_TIMEOUT: "10s"
+    NETWORK_GENESIS: "{}"
+    NETWORK_L1_CONTRACTS_MESSAGEBUS: "0x6eCd4F00A50ee607B17941AD4AfE9DFEc773e5C8"
+    HOST_RPC_HTTPPORT: "80"
+    HOST_P2P_DISABLED: "false"
+    ENCLAVE_L1_GENESISJSON: "[]"
+    NETWORK_BATCH_MAXSIZE: "56320"
+    HOST_L1_WSURL: "ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000"
+    ENCLAVE_RPC_TIMEOUT: "5s"
+    ENCLAVE_RPC_BINDADDRESS: "0.0.0.0:11001"
+    ENCLAVE_DB_USEINMEMORY: "false"
+    HOST_DEBUG_ENABLEPROFILER: "false"
+    ENCLAVE_DB_EDGELESSDBHOST: "obscuronode-edgelessdb"
+    HOST_P2P_BINDADDRESS: "0.0.0.0:10000"
+    NETWORK_SEQUENCER_P2PADDRESS: "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000"
+    NETWORK_GAS_LOCALEXECUTIONCAP: "300000000000"
+    NODE_NODETYPE: "sequencer"
+    HOST_ENCLAVE_RPCADDRESSES: "obscuronode-enclave:11001"
+    HOST_RPC_WSPORT: "81"
+    NETWORK_ROLLUP_MAXSIZE: "131072"
+    NETWORK_L1_CONTRACTS_MANAGEMENT: "0xeA9B1570088B81b060DE1a5f21d17FaE723ff630"
+    NODE_NAME: "obscuronode"
+    HOST_RPC_ENABLEWS: "true"
+    NETWORK_L1_BLOCKTIME: "15s"
+    HOST_DEBUG_METRICSHTTPPORT: "0"
+    ENCLAVE_DEBUG_ENABLEPROFILER: "false"
+    ENCLAVE_LOG_PATH: "sys_out"
+    NETWORK_L1_CHAINID: "1337"
+    NETWORK_GAS_PAYMENTADDRESS: "0xd6C9230053f45F873Cb66D8A02439380a37A4fbF"
+    NODE_HOSTADDRESS: "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000"
+    HOST_L1_RPCTIMEOUT: "15s"
+    NETWORK_CROSSCHAIN_INTERVAL: "6s"
+    NETWORK_BATCH_INTERVAL: "1s"
+    HOST_ENCLAVE_RPCTIMEOUT: "10s"
+    ENCLAVE_DEBUG_ENABLEDEBUGNAMESPACE: "true"
+    NETWORK_GAS_MINGASPRICE: "1000000000"
+    NETWORK_ROLLUP_MAXINTERVAL: "10m0s"
+    HOST_L1_BLOBARCHIVEURL: ""
+    NETWORK_CHAINID: "443"
+    NODE_ID: "0x3c8a281Ea7959b9f457a6939125A72C53f23433E"
     HOST_RPC_ENABLEHTTP: "true"
     HOST_DEBUG_ENABLEDEBUGNAMESPACE: "true"
   secretEnv:
-    NODE_PRIVATEKEY: "REPLEACEME"
-    HOST_DB_POSTGRESHOST: "REPLEACEME"
+    NODE_PRIVATEKEY: "b8145e87ac856eddfdce2d600ce635e8b228df99b07585abaabd306451e66523E"
   extraEnv: []
   service:
     type: LoadBalancer
@@ -158,28 +223,32 @@ host:
 
 postgresql:
   enabled: true
-  postgresqlUsername: user
-  postgresqlPassword: password
-  postgresqlDatabase: mydatabase
-  service:
-    port: 5432
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 20Gi
 
 edb:
   enabled: true
+  image:
+    repository: "ghcr.io/edgelesssys"
+    tag: "v0.3.2"
+    pullPolicy: "IfNotPresent"
+    imagePullSecrets: []
   replicas: 1
   sqlApiHost: "0.0.0.0"
   sqlApiPort: 3306
   restApiHost: "0.0.0.0"
   restApiPort: 8080
   debug: false
-  logDir: ""
   simulation: false
-  heapSize: 1
+  heapSize: 4
   marbleType: EdgelessDB
   launchMarble: false
   resources:
     limits:
-      sgx.intel.com/epc: "5Mi"
+      sgx.intel.com/epc: "10Mi"
       sgx.intel.com/provision: 1
       sgx.intel.com/enclave: 1
   storage:

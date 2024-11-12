@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "ten-node.fullname" . }}-edb-pvc
+  name: {{ include "ten-node.fullname" . }}-edb
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: edgelessdb-storage
     app.kubernetes.io/component: persistent-storage
     app.kubernetes.io/part-of: EdgelessDB
 spec:
-    {{- toYaml .Values.storage.spec | nindent 4 }}
+    {{- toYaml .Values.edb.storage.spec | nindent 4 }}
 {{- end }}

@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/name: EdgelessDB
     app.kubernetes.io/part-of: EdgelessDB
 spec:
-  serviceName: {{ include "ten-node.fullname" . }}-edb-svc
+  serviceName: {{ include "ten-node.fullname" . }}-edb
   replicas: {{ .Values.edb.replicas }}
   selector:
     matchLabels:
@@ -28,15 +28,12 @@ spec:
         {{- toYaml .Values.edb.affinity | nindent 8 }}
       tolerations:
         {{- toYaml .Values.edb.tolerations | nindent 8 }}
-      serviceAccountName: {{ include "ten-node.fullname" . }}-edb-svc
       containers:
         - env:
           - name: EDG_EDB_DATABASE_ADDR
             value: "{{ .Values.edb.sqlApiHost }}:{{ .Values.edb.sqlApiPort }}"
           - name: EDG_EDB_API_ADDR
             value: "{{ .Values.edb.restApiHost }}:{{ .Values.edb.restApiPort }}"
-          - name: EDG_EDB_LOG_DIR
-            value: "{{ {{ include "ten-node.fullname" . }}-edb-svclogDir }}"
           - name: EDG_EDB_CERT_DNS
             value: "edgelessdb"
           - name: OE_SIMULATION
@@ -45,7 +42,7 @@ spec:
           args: [ "-marble" ]
           {{- end }}
           name: edgelessdb
-          image: "{{ .Values.edb.image.repository }}/edgelessdb-sgx-{{ .Values.edb.heapSize }}gb:{{ .Values.edb.image.version }}"
+          image: "{{ .Values.edb.image.repository }}/edgelessdb-sgx-{{ .Values.edb.heapSize }}gb:{{ .Values.edb.image.tag }}"
           imagePullPolicy: {{ .Values.edb.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.edb.sqlApiPort }}
@@ -54,11 +51,14 @@ spec:
               name: http
           resources:
           {{- toYaml .Values.edb.resources | nindent 12 }}
+          securityContext:
+            privileged: true
+            runAsUser: 0
           volumeMounts:
-          - name: edgelessdb-storage
+          - name: {{ include "ten-node.fullname" . }}-edb
             mountPath: /enclavedata
       volumes:
-        - name: edgelessdb-storage
+        - name: {{ include "ten-node.fullname" . }}-edb
           persistentVolumeClaim:
-            claimName: edgelessdb-storage
+            claimName: {{ include "ten-node.fullname" . }}-edb
 {{- end }}

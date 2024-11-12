@@ -26,16 +26,15 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ten-node.serviceAccountName" . }}
+      serviceAccountName: {{ include "ten-node.fullname" . }}-enclave
       securityContext:
         {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
       volumes:
-        - name: config-volume
-          configMap:
-            name: {{ include "ten-node.fullname" . }}-config
         - name: enclave-config
           configMap:
-            name: {{ include "ten-node.fullname" . }}-enclave-configmap
+            name: {{ include "ten-node.fullname" . }}-enclave
+        - name: enclavedata
+          emptyDir: {}
       initContainers:
         - name: wait-for-host
           image: bitnami/kubectl:latest
@@ -49,16 +48,13 @@ spec:
               done
               export NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
               echo "NODE_HOSTADDRESS=$NODE_HOSTADDRESS"
-          env:
-            - name: KUBERNETES_SERVICE_HOST
-              value: {{ .Values.kubernetesServiceHost }}
-            - name: KUBERNETES_SERVICE_PORT
-              value: {{ .Values.kubernetesServicePort }}
       containers:
         - name: {{ .Chart.Name }}-enclave
           securityContext:
-            {{- toYaml .Values.enclave.securityContext | nindent 12 }}
+            privileged: true
+            runAsUser: 0
           image: "{{ .Values.enclave.image.repository }}:{{ .Values.enclave.image.tag }}"
+          command: ["/bin/sh", "-c", "/home/obscuro/go-obscuro/go/enclave/main/entry.sh ego run /home/obscuro/go-obscuro/go/enclave/main/main -willAttest=true"]
           resources:
             {{- toYaml .Values.enclave.resources | nindent 12 }}
           imagePullPolicy: {{ .Values.enclave.image.pullPolicy }}
@@ -68,21 +64,21 @@ spec:
               containerPort: {{ .containerPort }}
               protocol: {{ .protocol | default "TCP" }}
             {{- end }}
+          env:
+            {{- range .Values.enclave.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
           envFrom:
             - configMapRef:
-                name: {{ include "ten-node.fullname" . }}-config
+                name: {{ include "ten-node.fullname" . }}-enclave
             - secretRef:
-                name: {{ include "ten-node.fullname" . }}-enclave-secret
-          env:
-            - name: NODE_HOSTADDRESS
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
+                name: {{ include "ten-node.fullname" . }}-enclave
           volumeMounts:
-            - name: config-volume
-              mountPath: /etc/config
             - name: enclave-config
-              mountPath: /path/to/mount
+              mountPath: /etc/config
+            - name: enclavedata
+              mountPath: /enclavedata
           {{- if .Values.enclave.readinessProbe.enabled }}
           readinessProbe:
             httpGet:

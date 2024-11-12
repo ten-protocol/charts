@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "ten-node.fullname" . }}-enclave-configmap
+  name: {{ include "ten-node.fullname" . }}-enclave
   labels:
     {{- include "ten-node.labels" . | nindent 4 }}
 data:
-  {{- range $key, $value := .Values.enclave.config }}
+  {{- range $key, $value := .Values.enclave.env }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
 {{- end }}

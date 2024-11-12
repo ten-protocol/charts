@@ -2,10 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-    name: {{ include "ten-node.fullname" . }}-enclave-role
+    name: {{ include "ten-node.fullname" . }}-enclave
 rules:
 - apiGroups: [""]
-    resources: ["services"]
-    resourceNames: ["kunbetnets"]
-    verbs: ["get", "list", "watch"]
+  resources: ["services"]
+  verbs: ["get", "list", "watch"]
 {{- end }}

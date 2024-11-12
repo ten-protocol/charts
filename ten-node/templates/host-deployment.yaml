@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ten-node.fullname" . }}-host
+  name: {{ include "ten-node.fullname" $ }}-host
   labels:
     app: {{ .Release.Name }}-host
     {{- include "ten-node.labels" . | nindent 4 }}
@@ -26,13 +26,12 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ten-node.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.host.podSecurityContext | nindent 8 }}
       volumes:
         - name: config-volume
           configMap:
-            name: {{ include "ten-node.fullname" . }}-config
+            name: {{ include "ten-node.fullname" . }}-host
       containers:
         - name: {{ .Chart.Name }}-host
           securityContext:
@@ -53,9 +52,12 @@ spec:
             - secretRef:
                 name: {{ include "ten-node.fullname" . }}-host
           env:
-            {{- if .Values.postgresql.enabled }}
-            - name: HOST_DB_POSTGRESHOST
-              value: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ include "ten-node.fullname" . }}-postgresql:5432/{{ .Values.postgresql.auth.database }}"
+            {{- range $key, $value := .Values.host.secretEnv }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ten-node.fullname" $ }}-host
+                  key: {{ $key }}
             {{- end }}
           volumeMounts:
             - name: config-volume
