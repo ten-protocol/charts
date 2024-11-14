@@ -35,7 +35,7 @@ spec:
           - name: EDG_EDB_API_ADDR
             value: "{{ .Values.edb.restApiHost }}:{{ .Values.edb.restApiPort }}"
           - name: EDG_EDB_CERT_DNS
-            value: "edgelessdb"
+            value: {{ include "ten-node.fullname" . }}-edb
           - name: OE_SIMULATION
             value: {{ if .Values.edb.simulation }}"1"{{ else }}"0"{{ end }}
           {{- if .Values.edb.launchMarble }}

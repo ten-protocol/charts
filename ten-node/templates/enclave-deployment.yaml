@@ -15,9 +15,9 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/enclave-secret.yaml") . | sha256sum }}
-      {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         app: {{ .Release.Name }}-enclave
         {{- include "ten-node.selectorLabels" . | nindent 8 }}
@@ -30,10 +30,9 @@ spec:
       securityContext:
         {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
       volumes:
-        - name: enclave-config
-          configMap:
-            name: {{ include "ten-node.fullname" . }}-enclave
         - name: enclavedata
+          emptyDir: {}
+        - name: shared-data
           emptyDir: {}
       initContainers:
         - name: wait-for-host
@@ -46,15 +45,23 @@ spec:
                 echo "Waiting for host service to get an IP address..."
                 sleep 5
               done
-              export NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              echo "NODE_HOSTADDRESS=$NODE_HOSTADDRESS"
+              NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+              echo "NODE_HOSTADDRESS=$NODE_HOSTADDRESS" > /shared-data/node-host.env
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
       containers:
         - name: {{ .Chart.Name }}-enclave
           securityContext:
             privileged: true
             runAsUser: 0
           image: "{{ .Values.enclave.image.repository }}:{{ .Values.enclave.image.tag }}"
-          command: ["/bin/sh", "-c", "/home/obscuro/go-obscuro/go/enclave/main/entry.sh ego run /home/obscuro/go-obscuro/go/enclave/main/main -willAttest=true"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              source /shared-data/node-host.env
+              /home/obscuro/go-obscuro/go/enclave/main/entry.sh ego run /home/obscuro/go-obscuro/go/enclave/main/main -willAttest=true
           resources:
             {{- toYaml .Values.enclave.resources | nindent 12 }}
           imagePullPolicy: {{ .Values.enclave.image.pullPolicy }}
@@ -65,18 +72,139 @@ spec:
               protocol: {{ .protocol | default "TCP" }}
             {{- end }}
           env:
-            {{- range .Values.enclave.env }}
-            - name: {{ .name }}
-              value: {{ .value | quote }}
-            {{- end }}
+            - name: OE_SIMULATION
+              value: {{ if .Values.enclave.simulation }}"1"{{ else }}"0"{{ end }}
+            - name: ENCLAVE_L1_ENABLEBLOCKVALIDATION
+              value: {{ .Values.config.enclave.l1.enableblockvalidation | default "false" | quote }}
+            - name: ENCLAVE_LOG_LEVEL
+              value: {{ .Values.config.enclave.log.level | default "3" | quote }}
+            - name: ENCLAVE_ENABLEATTESTATION
+              value: {{ .Values.config.enclave.enableattestation | default "true" | quote }}
+            - name: ENCLAVE_RPC_TIMEOUT             
+              value: {{ .Values.config.enclave.rpctimeout | default "5s" | quote }}
+            - name: ENCLAVE_RPC_BINDADDRESS
+              value: {{ .Values.config.enclave.rpc.bindaddress | default "0.0.0.0:11001" | quote }}
+            - name: ENCLAVE_DB_USEINMEMORY
+              value: {{ .Values.config.enclave.db.useinmemory | default "false" | quote }}
+            - name: ENCLAVE_DB_EDGELESSDBHOST
+              value: {{ include "ten-node.fullname" . }}-edb
+            - name: ENCLAVE_DB_SQLITEPATH
+              value: {{ .Values.config.enclave.db.sqlitepath | default "" | quote }}
+            - name: ENCLAVE_L1_GENESISJSON
+              value: {{ .Values.config.enclave.l1.genesisjson | default "[]" | quote }}
+            - name: ENCLAVE_DEBUG_ENABLEPROFILER
+              value: {{ .Values.config.enclave.debug.enableprofiler | default "false" | quote }}
+            - name: ENCLAVE_LOG_PATH
+              value: {{ .Values.config.enclave.log.path | default "sys_out" | quote }}
+            - name: ENCLAVE_DEBUG_ENABLEDEBUGNAMESPACE
+              value: {{ .Values.config.enclave.debug.enabledebugnamespace | quote | default "true" }}
+            - name: NODE_PRIVATEKEY
+              value: {{ .Values.host.secretEnv.NODE_PRIVATEKEY | quote }}
+            # network env vars
+            - name: NETWORK_GAS_BASEFEE
+              value: {{ .Values.config.network.gas.basefee | default "1000000000" | quote }}
+            - name: NETWORK_L1_STARTHASH
+              value: {{ .Values.config.network.l1.starthash | default "" | quote }}
+            - name: NETWORK_GAS_BATCHEXECUTIONLIMIT
+              value: {{ .Values.config.network.gas.batchexecutionlimit | default "300000000000" | quote }}
+            - name: NETWORK_BATCH_MAXINTERVAL
+              value: {{ .Values.config.network.batch.maxinterval | default "1s" | quote }}
+            - name: NETWORK_ROLLUP_INTERVAL
+              value: {{ .Values.config.network.rollup.interval | default "15m0s" | quote }}
+            - name: NETWORK_L1_CONTRACTS_BRIDGE
+              value: {{ .Values.config.network.l1.l1contracts.bridgecontract | default "0x0000000000000000000000000000000000000000" | quote }}
+            - name: NETWORK_GENESIS
+              value: {{ .Values.config.network.genesisjson | default "{}" | quote }}
+            - name: NETWORK_L1_CONTRACTS_MESSAGEBUS
+              value: {{ .Values.config.network.l1.l1contracts.messagebuscontract | default "" | quote }}
+            - name: NETWORK_BATCH_MAXSIZE
+              value: {{ .Values.config.network.batch.maxsize | default "56320" | quote }}
+            - name: NETWORK_SEQUENCER_P2PADDRESS
+              value: {{ .Values.config.network.sequencer.p2paddress | default "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000" | quote }}
+            - name: NETWORK_GAS_LOCALEXECUTIONCAP
+              value: {{ .Values.config.network.gas.localexecutioncap | default "300000000000" | quote }}
+            - name: NETWORK_ROLLUP_MAXSIZE
+              value: {{ .Values.config.network.rollup.maxsize | default "131072" | quote }}
+            - name: NETWORK_L1_CONTRACTS_MANAGEMENT
+              value: {{ .Values.config.network.l1.l1contracts.managementcontract | default "" | quote }}
+            - name: NETWORK_L1_BLOCKTIME
+              value: {{ .Values.config.network.l1.blocktime | default "15s" | quote }}
+            - name: NETWORK_GAS_MINGASPRICE
+              value: {{ .Values.config.network.gas.mingasprice | default "1000000000" | quote }}
+            - name: NETWORK_ROLLUP_MAXINTERVAL
+              value: {{ .Values.config.network.rollup.maxinterval | default "10m0s" | quote }}
+            - name: NETWORK_L1_CHAINID
+              value: {{ .Values.config.network.l1.chainid | default "1337" | quote }}
+            - name: NETWORK_CHAINID
+              value: {{ .Values.config.network.chainid | default "443" | quote }}
+            - name: NETWORK_CROSSCHAIN_INTERVAL
+              value: {{ .Values.config.network.crosschain.interval | default "6s" | quote }}
+            - name: NETWORK_GAS_PAYMENTADDRESS
+              value: {{ .Values.config.network.gas.paymentaddress | default "0xd6c9230053f45f873cb66d8a02439380a37a4fbf" | quote }}
+            - name: NETWORK_BATCH_INTERVAL
+              value: {{ .Values.config.network.batch.interval | default "1s" | quote }}
+
+            # node env vars
+            # - name: NODE_HOSTADDRESS
+            #   value: {{ .Values.config.node.hostaddress | default "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000" | quote }}
+            - name: NODE_ID
+              value: {{ .Values.config.node.id | default "0xd6bcf7694fc4ed7c7c61b3fc5757919e237d0bf5" | quote }}
+            - name: NODE_ISGENESIS
+              value: {{ .Values.config.node.isgenesis | default "false" | quote }}
+            - name: NODE_NODETYPE
+              value: {{ .Values.config.node.nodetype | default "validator" | quote }}
+            - name: NODE_NAME
+              value: {{ .Values.config.node.name | default "tennode" | quote }}
+
+              # host env vars
+            - name: HOST_LOG_LEVEL
+              value: {{ .Values.config.host.log.level | default "3" | quote }}
+            - name: HOST_LOG_PATH
+              value: {{ .Values.config.host.log.path | default "sys_out" | quote }}
+            - name: HOST_RPC_ADDRESS
+              value: {{ .Values.config.host.rpc.address | default "0.0.0.0" | quote }}
+            - name: HOST_RPC_ENABLEHTTP
+              value: {{ .Values.config.host.rpc.enablehttp | default "true" | quote }}
+            - name: HOST_RPC_HTTPPORT
+              value: {{ .Values.config.host.rpc.httpport | default "80" | quote }}
+            - name: HOST_RPC_ENABLEWS
+              value: {{ .Values.config.host.rpc.enablews | default "true" | quote }}
+            - name: HOST_RPC_WSPORT
+              value: {{ .Values.config.host.rpc.wsport | default "81" | quote }}
+            - name: HOST_P2P_BINDADDRESS
+              value: {{ .Values.config.host.p2p.bindaddress | default "0.0.0.0:10000" | quote }}
+            - name: HOST_P2P_DISABLED
+              value: {{ .Values.config.host.p2p.disabled | default "false" | quote }}
+            - name: HOST_P2P_TIMEOUT
+              value: {{ .Values.config.host.p2p.timeout | default "5s" | quote }}
+            - name: HOST_L1_BEACONURL
+              value: {{ .Values.config.host.l1.l1beaconurl | default "" | quote }}
+            - name: HOST_L1_WSURL
+              value: {{ .Values.config.host.l1.websocketurl | default "" | quote }}
+            - name: HOST_L1_RPCTIMEOUT
+              value: {{ .Values.config.host.l1.rpctimeout | default "15s" | quote }}
+            - name: HOST_L1_BLOBARCHIVEURL
+              value: {{ .Values.config.host.l1.blobarchiveurl | default "" | quote }}
+            - name: HOST_ENCLAVE_RPCADDRESSES
+              value: {{ include "ten-node.fullname" . }}-enclave:11001
+            - name: HOST_ENCLAVE_RPCTIMEOUT
+              value: {{ .Values.config.host.enclave.rpctimeout | default "10s" | quote }}
+            - name: HOST_DEBUG_ENABLEMETRICS
+              value: {{ .Values.config.host.debug.enablemetrics | default "true" | quote }}
+            - name: HOST_DEBUG_ENABLEPROFILER
+              value: {{ .Values.config.host.debug.enableprofiler | default "false" | quote }} 
+            - name: HOST_DEBUG_METRICSHTTPPORT
+              value: {{ .Values.config.host.debug.metricshttpport | default "9090" | quote }}
+            - name: HOST_DEBUG_ENABLEDEBUGNAMESPACE
+              value: {{ .Values.config.host.debug.enabledebugnamespace | default "true" | quote }}
+            - name: HOST_DB_USEINMEMORY
+              value: {{ .Values.config.host.db.useinmemory | default "false" | quote }}
+            - name: HOST_DB_SQLITEPATH
+              value: {{ .Values.config.host.db.sqlitepath | default "" | quote }}
           envFrom:
-            - configMapRef:
-                name: {{ include "ten-node.fullname" . }}-enclave
             - secretRef:
                 name: {{ include "ten-node.fullname" . }}-enclave
           volumeMounts:
-            - name: enclave-config
-              mountPath: /etc/config
             - name: enclavedata
               mountPath: /enclavedata
           {{- if .Values.enclave.readinessProbe.enabled }}
@@ -86,7 +214,7 @@ spec:
               port: http
               scheme: HTTP
             {{- with .Values.enclave.readinessProbe.params }}
-            {{- . | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
           {{- if .Values.enclave.livenessProbe.enabled }}
@@ -96,6 +224,7 @@ spec:
               port: http
               scheme: HTTP
             {{- with .Values.enclave.livenessProbe.params }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
       {{- with .Values.nodeSelector }}

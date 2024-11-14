@@ -12,8 +12,8 @@ enclave:
   enabled: true
   replicaCount: 1
   image:
-    repository: testnetobscuronet.azurecr.io/obscuronet/dev_enclave
-    tag: latest
+    repository: testnetobscuronet.azurecr.io/obscuronet/enclave
+    tag: edb-debug-0.2
     pullPolicy: IfNotPresent
     imagePullSecrets: []
 
@@ -29,68 +29,7 @@ enclave:
 
   affinity: {}
 
-  env:
-    ENCLAVE_L1_ENABLEBLOCKVALIDATION: "false"
-    ENCLAVE_LOG_LEVEL: "3"
-    ENCLAVE_ENABLEATTESTATION: "true"
-    HOST_LOG_LEVEL: "3"
-    NETWORK_GAS_BASEFEE: "1000000000"
-    NETWORK_L1_STARTHASH: "0xde52869dc85dca5bdd614e82c7c141bcf8a5287a63500391379f1f707ea0525a"
-    NETWORK_GAS_BATCHEXECUTIONLIMIT: "300000000000"
-    HOST_DB_USEINMEMORY: "false"
-    NETWORK_BATCH_MAXINTERVAL: "1s"
-    HOST_L1_BEACONURL: "dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600"
-    HOST_LOG_PATH: "sys_out"
-    HOST_DB_SQLITEPATH: ""
-    HOST_DEBUG_ENABLEMETRICS: "true"
-    HOST_RPC_ADDRESS: "0.0.0.0"
-    NETWORK_ROLLUP_INTERVAL: "15m0s"
-    NETWORK_L1_CONTRACTS_BRIDGE: "0x0000000000000000000000000000000000000000"
-    ENCLAVE_DB_SQLITEPATH: ""
-    NODE_ISGENESIS: "true"
-    HOST_P2P_TIMEOUT: "10s"
-    NETWORK_GENESIS: "{}"
-    NETWORK_L1_CONTRACTS_MESSAGEBUS: "0x6eCd4F00A50ee607B17941AD4AfE9DFEc773e5C8"
-    HOST_RPC_HTTPPORT: "80"
-    HOST_P2P_DISABLED: "false"
-    ENCLAVE_L1_GENESISJSON: "[]"
-    NETWORK_BATCH_MAXSIZE: "56320"
-    HOST_L1_WSURL: "ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000"
-    ENCLAVE_RPC_TIMEOUT: "5s"
-    ENCLAVE_RPC_BINDADDRESS: "0.0.0.0:11001"
-    ENCLAVE_DB_USEINMEMORY: "false"
-    HOST_DEBUG_ENABLEPROFILER: "false"
-    ENCLAVE_DB_EDGELESSDBHOST: "obscuronode-edgelessdb"
-    HOST_P2P_BINDADDRESS: "0.0.0.0:10000"
-    NETWORK_SEQUENCER_P2PADDRESS: "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000"
-    NETWORK_GAS_LOCALEXECUTIONCAP: "300000000000"
-    NODE_NODETYPE: "sequencer"
-    HOST_ENCLAVE_RPCADDRESSES: "obscuronode-enclave:11001"
-    HOST_RPC_WSPORT: "81"
-    NETWORK_ROLLUP_MAXSIZE: "131072"
-    NETWORK_L1_CONTRACTS_MANAGEMENT: "0xeA9B1570088B81b060DE1a5f21d17FaE723ff630"
-    NODE_NAME: "obscuronode"
-    HOST_RPC_ENABLEWS: "true"
-    NETWORK_L1_BLOCKTIME: "15s"
-    HOST_DEBUG_METRICSHTTPPORT: "0"
-    ENCLAVE_DEBUG_ENABLEPROFILER: "false"
-    ENCLAVE_LOG_PATH: "sys_out"
-    NETWORK_L1_CHAINID: "1337"
-    NETWORK_GAS_PAYMENTADDRESS: "0xd6C9230053f45F873Cb66D8A02439380a37A4fbF"
-    NODE_HOSTADDRESS: "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000"
-    HOST_L1_RPCTIMEOUT: "15s"
-    NETWORK_CROSSCHAIN_INTERVAL: "6s"
-    NETWORK_BATCH_INTERVAL: "1s"
-    HOST_ENCLAVE_RPCTIMEOUT: "10s"
-    ENCLAVE_DEBUG_ENABLEDEBUGNAMESPACE: "true"
-    NETWORK_GAS_MINGASPRICE: "1000000000"
-    NETWORK_ROLLUP_MAXINTERVAL: "10m0s"
-    HOST_L1_BLOBARCHIVEURL: ""
-    NETWORK_CHAINID: "443"
-    NODE_ID: "0x3c8a281Ea7959b9f457a6939125A72C53f23433E"
-    HOST_RPC_ENABLEHTTP: "true"
-    HOST_DEBUG_ENABLEDEBUGNAMESPACE: "true"
-
+  
   readinessProbe:
     enabled: false
   livenessProbe:
@@ -103,12 +42,12 @@ enclave:
 
   service:
     type: ClusterIP
-    port: 11000
+    port: 11001
 
   ports:
     - name: rpc
-      port: 11000
-      containerPort: 11000
+      port: 11001
+      containerPort: 11001
 
   resources:
     limits:
@@ -129,77 +68,17 @@ host:
   enabled: true
   replicaCount: 1
   image:
-    repository: "testnetobscuronet.azurecr.io/obscuronet/dev_host"
-    tag: "latest"
+    repository: "testnetobscuronet.azurecr.io/obscuronet/host"
+    tag: "edb-debug-0.2"
     pullPolicy: "IfNotPresent"
     imagePullSecrets: []
   readinessProbe:
     enabled: false
   livenessProbe:
     enabled: false
-  env:
-    ENCLAVE_L1_ENABLEBLOCKVALIDATION: "false"
-    ENCLAVE_LOG_LEVEL: "3"
-    ENCLAVE_ENABLEATTESTATION: "true"
-    HOST_LOG_LEVEL: "3"
-    NETWORK_GAS_BASEFEE: "1000000000"
-    NETWORK_L1_STARTHASH: "0xde52869dc85dca5bdd614e82c7c141bcf8a5287a63500391379f1f707ea0525a"
-    NETWORK_GAS_BATCHEXECUTIONLIMIT: "300000000000"
-    HOST_DB_USEINMEMORY: "false"
-    NETWORK_BATCH_MAXINTERVAL: "1s"
-    HOST_L1_BEACONURL: "dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600"
-    HOST_LOG_PATH: "sys_out"
-    HOST_DB_SQLITEPATH: ""
-    HOST_DEBUG_ENABLEMETRICS: "true"
-    HOST_RPC_ADDRESS: "0.0.0.0"
-    NETWORK_ROLLUP_INTERVAL: "15m0s"
-    NETWORK_L1_CONTRACTS_BRIDGE: "0x0000000000000000000000000000000000000000"
-    ENCLAVE_DB_SQLITEPATH: ""
-    NODE_ISGENESIS: "true"
-    HOST_P2P_TIMEOUT: "10s"
-    NETWORK_GENESIS: "{}"
-    NETWORK_L1_CONTRACTS_MESSAGEBUS: "0x6eCd4F00A50ee607B17941AD4AfE9DFEc773e5C8"
-    HOST_RPC_HTTPPORT: "80"
-    HOST_P2P_DISABLED: "false"
-    ENCLAVE_L1_GENESISJSON: "[]"
-    NETWORK_BATCH_MAXSIZE: "56320"
-    HOST_L1_WSURL: "ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000"
-    ENCLAVE_RPC_TIMEOUT: "5s"
-    ENCLAVE_RPC_BINDADDRESS: "0.0.0.0:11001"
-    ENCLAVE_DB_USEINMEMORY: "false"
-    HOST_DEBUG_ENABLEPROFILER: "false"
-    ENCLAVE_DB_EDGELESSDBHOST: "obscuronode-edgelessdb"
-    HOST_P2P_BINDADDRESS: "0.0.0.0:10000"
-    NETWORK_SEQUENCER_P2PADDRESS: "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000"
-    NETWORK_GAS_LOCALEXECUTIONCAP: "300000000000"
-    NODE_NODETYPE: "sequencer"
-    HOST_ENCLAVE_RPCADDRESSES: "obscuronode-enclave:11001"
-    HOST_RPC_WSPORT: "81"
-    NETWORK_ROLLUP_MAXSIZE: "131072"
-    NETWORK_L1_CONTRACTS_MANAGEMENT: "0xeA9B1570088B81b060DE1a5f21d17FaE723ff630"
-    NODE_NAME: "obscuronode"
-    HOST_RPC_ENABLEWS: "true"
-    NETWORK_L1_BLOCKTIME: "15s"
-    HOST_DEBUG_METRICSHTTPPORT: "0"
-    ENCLAVE_DEBUG_ENABLEPROFILER: "false"
-    ENCLAVE_LOG_PATH: "sys_out"
-    NETWORK_L1_CHAINID: "1337"
-    NETWORK_GAS_PAYMENTADDRESS: "0xd6C9230053f45F873Cb66D8A02439380a37A4fbF"
-    NODE_HOSTADDRESS: "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000"
-    HOST_L1_RPCTIMEOUT: "15s"
-    NETWORK_CROSSCHAIN_INTERVAL: "6s"
-    NETWORK_BATCH_INTERVAL: "1s"
-    HOST_ENCLAVE_RPCTIMEOUT: "10s"
-    ENCLAVE_DEBUG_ENABLEDEBUGNAMESPACE: "true"
-    NETWORK_GAS_MINGASPRICE: "1000000000"
-    NETWORK_ROLLUP_MAXINTERVAL: "10m0s"
-    HOST_L1_BLOBARCHIVEURL: ""
-    NETWORK_CHAINID: "443"
-    NODE_ID: "0x3c8a281Ea7959b9f457a6939125A72C53f23433E"
-    HOST_RPC_ENABLEHTTP: "true"
-    HOST_DEBUG_ENABLEDEBUGNAMESPACE: "true"
+  
   secretEnv:
-    NODE_PRIVATEKEY: "b8145e87ac856eddfdce2d600ce635e8b228df99b07585abaabd306451e66523E"
+    NODE_PRIVATEKEY: "b4abdd0ffcb8cebcb4a8a2ac4e92a972724fc4534385910343e239d87c8cfd5c"
   extraEnv: []
   service:
     type: LoadBalancer
@@ -223,6 +102,11 @@ host:
 
 postgresql:
   enabled: true
+
+  tls: 
+    enabled: true
+    autoGenerated: true
+
   persistence:
     enabled: true
     storageClass: ""
@@ -243,7 +127,7 @@ edb:
   restApiPort: 8080
   debug: false
   simulation: false
-  heapSize: 4
+  heapSize: 1
   marbleType: EdgelessDB
   launchMarble: false
   resources:
@@ -264,3 +148,91 @@ edb:
       effect: NoSchedule
   nodeSelector:
     beta.kubernetes.io/os: linux
+
+config:
+  network:
+    chainid: 443
+    genesisjson: '{}'
+    batch:
+        interval: 1s
+        maxinterval: 1s
+        maxsize: 56320
+    gas:
+        basefee: "1000000000"
+        mingasprice: "1000000000"
+        paymentaddress: 0xd6c9230053f45f873cb66d8a02439380a37a4fbf
+        batchexecutionlimit: "300000000000"
+        localexecutioncap: "300000000000"
+    l1:
+        chainid: 1337
+        blocktime: 15s
+        starthash: 0xde52869dc85dca5bdd614e82c7c141bcf8a5287a63500391379f1f707ea0525a
+        l1contracts:
+            managementcontract: 0xea9b1570088b81b060de1a5f21d17fae723ff630
+            messagebuscontract: 0x6ecd4f00a50ee607b17941ad4afe9dfec773e5c8
+            bridgecontract: "0x0000000000000000000000000000000000000000"
+    rollup:
+        interval: 15m0s
+        maxinterval: 10m0s
+        maxsize: 131072
+    sequencer:
+        p2paddress: obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000
+    crosschain:
+        interval: 6s
+  node:
+    nodetype: "validator"
+    name: ""
+    id: 0x882205779Eb1c9Cb838B47AB1530aFb59561Cc9E
+    hostaddress: obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000
+    privatekeystring: b8145e87ac856eddfdce2d600ce635e8b228df99b07585abaabd306451e66523E
+    isgenesis: false
+  host:
+    db:
+        useinmemory: false
+        sqlitepath: ""
+    debug:
+        enablemetrics: true
+        metricshttpport: 0
+        enableprofiler: false
+        enabledebugnamespace: true
+    enclave:
+        rpcaddresses:
+            - obscuronode-enclave:11001
+        rpctimeout: 10s
+    l1:
+        websocketurl: ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000
+        l1beaconurl: dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600
+        l1blobarchiveurl: ""
+        rpctimeout: 15s
+    log:
+        level: 3
+        path: sys_out
+    p2p:
+        isdisabled: false
+        bindaddress: 0.0.0.0:10000
+        timeout: 10s
+    rpc:
+        address: 0.0.0.0
+        enablehttp: true
+        httpport: 80
+        enablews: true
+        wsport: 81
+  enclave:
+    simulation: false
+    enableattestation: true
+    db:
+        useinmemory: false
+        edgelessdbhost: obscuronode-edgelessdb
+        sqlitepath: ""
+    debug:
+        enabledebugnamespace: true
+        enableprofiler: false
+    l1:
+        enableblockvalidation: false
+        genesisjson: []
+    log:
+        level: 3
+        path: sys_out
+    rpc:
+        bindaddress: 0.0.0.0:11001
+        timeout: 5s
