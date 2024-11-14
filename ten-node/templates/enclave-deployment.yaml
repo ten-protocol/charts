@@ -46,7 +46,7 @@ spec:
                 sleep 5
               done
               NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              echo "NODE_HOSTADDRESS=$NODE_HOSTADDRESS" > /shared-data/node-host.env
+              echo "export NODE_HOSTADDRESS=$NODE_HOSTADDRESS" > /shared-data/node-host.env
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
@@ -207,6 +207,8 @@ spec:
           volumeMounts:
             - name: enclavedata
               mountPath: /enclavedata
+            - name: shared-data
+              mountPath: /shared-data
           {{- if .Values.enclave.readinessProbe.enabled }}
           readinessProbe:
             httpGet:

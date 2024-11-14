@@ -29,6 +29,9 @@ spec:
       securityContext:
         {{- toYaml .Values.host.podSecurityContext | nindent 8 }}
       {{- if .Values.postgresql.enabled }}
+      volumes:
+        - name: shared-data
+          emptyDir: {}
       initContainers:
       - name: init-host-db
         image: busybox
@@ -46,13 +49,17 @@ spec:
           - |
             export HOST_DB_POSTGRESHOST="postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_DB_URL}:5432/"
             echo "Database host URL is set to $HOST_DB_POSTGRESHOST"
+            echo "export HOST_DB_POSTGRESHOST=$HOST_DB_POSTGRESHOST" > /shared-data/node-host.env
           {{- end }}
+        volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
       containers:
         - name: {{ .Chart.Name }}-host
           securityContext:
             privileged: true
             runAsUser: 0
-          command: ["/bin/sh", "-c", "./main "]
+          command: ["/bin/sh", "-c", "source /shared-data/node-host.env && ./main "]
           image: "{{ .Values.host.image.repository }}:{{ .Values.host.image.tag }}"
           resources:
             {{- toYaml .Values.host.resources | nindent 12 }}
@@ -170,6 +177,9 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "ten-node.fullname" . }}-host
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
           {{- if .Values.host.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
