@@ -182,9 +182,8 @@ config:
   node:
     nodetype: "validator"
     name: ""
-    id: 0x882205779Eb1c9Cb838B47AB1530aFb59561Cc9E
-    hostaddress: obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000
-    privatekeystring: b8145e87ac856eddfdce2d600ce635e8b228df99b07585abaabd306451e66523E
+    id: "REPLACE_ME"
+    privatekeystring: "REPLACE_ME"
     isgenesis: false
   host:
     db:
