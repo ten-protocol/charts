@@ -45,7 +45,7 @@ spec:
               sleep 5
             done
             NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-            echo "export NODE_HOSTADDRESS=$NODE_HOSTADDRESS" > /shared-data/node-host.env
+            echo "export NODE_HOSTADDRESS=$NODE_HOSTADDRESS:10000" > /shared-data/node-host.env
         volumeMounts:
           - name: shared-data
             mountPath: /shared-data
@@ -133,9 +133,7 @@ spec:
             - name: NETWORK_BATCH_INTERVAL
               value: {{ .Values.config.network.batch.interval | default "1s" | quote }}
 
-            # node env vars
-            # - name: NODE_HOSTADDRESS
-            #   value: {{ .Values.config.node.hostaddress | default "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000" | quote }}
+        
             - name: NODE_ID
               value: {{ .Values.config.node.id | default "0xd6bcf7694fc4ed7c7c61b3fc5757919e237d0bf5" | quote }}
             - name: NODE_ISGENESIS

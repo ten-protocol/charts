@@ -12,8 +12,8 @@ enclave:
   enabled: true
   replicaCount: 1
   image:
-    repository: testnetobscuronet.azurecr.io/obscuronet/enclave
-    tag: edb-debug-0.2
+    repository: testnetobscuronet.azurecr.io/obscuronet/dev_enclave
+    tag: latest
     pullPolicy: IfNotPresent
     imagePullSecrets: []
 
@@ -68,8 +68,8 @@ host:
   enabled: true
   replicaCount: 1
   image:
-    repository: "testnetobscuronet.azurecr.io/obscuronet/host"
-    tag: "edb-debug-0.2"
+    repository: "testnetobscuronet.azurecr.io/obscuronet/dev_host"
+    tag: "latest"
     pullPolicy: "IfNotPresent"
     imagePullSecrets: []
   readinessProbe:
@@ -78,7 +78,7 @@ host:
     enabled: false
   
   secretEnv:
-    NODE_PRIVATEKEY: "1f2b365472a7c09e17d959810fa12f3712eef228e739273443ab6055fa926bc4"
+    NODE_PRIVATEKEY: "REPLACE_ME" #Private key of the node
   extraEnv: []
   service:
     type: LoadBalancer
@@ -166,24 +166,23 @@ config:
     l1:
         chainid: 1337
         blocktime: 15s
-        starthash: 0xb4181c03ccdbf398b2c5b5dfe707531f5c269a2e60eb0393a13cd5b8a69dc9a4
+        starthash: 0x5312a928b64b7c9d20afd6e60ece0c07b929539f71756c38ac76e5339872d6e5
         l1contracts:
-            managementcontract: 0x6E09C67ff3624bFCf7a1d9E42E5b95A7F78b4725
-            messagebuscontract: 0x2E0fCa718BA80D2d04dD99A286D944e80A3CD569
+            managementcontract: 0xEc6c7c29a32EfBeF5095eDBC535764D4226a624f
+            messagebuscontract: 0xd729424c9D05207c2a1E9C69fc941Ee97915ED92
             bridgecontract: "0x0000000000000000000000000000000000000000"
     rollup:
         interval: 15m0s
         maxinterval: 10m0s
         maxsize: 131072
     sequencer:
-        p2paddress: obscuronode-0-uat-testnet.uksouth.cloudapp.azure.com:10000
+        p2paddress: obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000
     crosschain:
         interval: 6s
   node:
     nodetype: "validator"
     name: ""
-    id: "REPLACE_ME"
-    privatekeystring: "REPLACE_ME"
+    id: REPLACE_ME #Public key of the node
     isgenesis: false
   host:
     db:
@@ -199,8 +198,8 @@ config:
             - obscuronode-enclave:11001
         rpctimeout: 10s
     l1:
-        websocketurl: ws://uat-testnet-eth2network.uksouth.cloudapp.azure.com:9000
-        l1beaconurl: uat-testnet-eth2network.uksouth.cloudapp.azure.com:12600
+        websocketurl: ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000
+        l1beaconurl: dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600
         l1blobarchiveurl: ""
         rpctimeout: 15s
     log:

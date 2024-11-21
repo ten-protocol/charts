@@ -30,8 +30,8 @@ spec:
       securityContext:
         {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
       volumes:
-        - name: enclavedata
-          emptyDir: {}
+        # - name: enclavedata
+        #   emptyDir: {}
         - name: shared-data
           emptyDir: {}
       initContainers:
@@ -46,7 +46,8 @@ spec:
                 sleep 5
               done
               NODE_HOSTADDRESS=$(kubectl get svc {{ include "ten-node.fullname" . }}-host -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              echo "export NODE_HOSTADDRESS=$NODE_HOSTADDRESS" > /shared-data/node-host.env
+              echo "export NODE_HOSTADDRESS=$NODE_HOSTADDRESS:10000" > /shared-data/node-enclave.env
+              echo "NODE_HOSTADDRESS=$NODE_HOSTADDRESS:10000 is written in /shared-data/node-enclave.env"
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
@@ -56,12 +57,8 @@ spec:
             privileged: true
             runAsUser: 0
           image: "{{ .Values.enclave.image.repository }}:{{ .Values.enclave.image.tag }}"
-          command:
-            - /bin/sh
-            - -c
-            - |
-              source /shared-data/node-host.env
-              /home/obscuro/go-obscuro/go/enclave/main/entry.sh ego run /home/obscuro/go-obscuro/go/enclave/main/main -willAttest=true
+          command: ["/bin/bash", "-c", "source /shared-data/node-enclave.env && /home/obscuro/go-obscuro/go/enclave/main/entry.sh && ego run /home/obscuro/go-obscuro/go/enclave/main/main -willAttest=true "]
+
           resources:
             {{- toYaml .Values.enclave.resources | nindent 12 }}
           imagePullPolicy: {{ .Values.enclave.image.pullPolicy }}
@@ -144,9 +141,6 @@ spec:
             - name: NETWORK_BATCH_INTERVAL
               value: {{ .Values.config.network.batch.interval | default "1s" | quote }}
 
-            # node env vars
-            # - name: NODE_HOSTADDRESS
-            #   value: {{ .Values.config.node.hostaddress | default "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000" | quote }}
             - name: NODE_ID
               value: {{ .Values.config.node.id | default "0xd6bcf7694fc4ed7c7c61b3fc5757919e237d0bf5" | quote }}
             - name: NODE_ISGENESIS
@@ -205,8 +199,8 @@ spec:
             - secretRef:
                 name: {{ include "ten-node.fullname" . }}-enclave
           volumeMounts:
-            - name: enclavedata
-              mountPath: /enclavedata
+            # - name: enclavedata
+            #   mountPath: /enclavedata
             - name: shared-data
               mountPath: /shared-data
           {{- if .Values.enclave.readinessProbe.enabled }}
