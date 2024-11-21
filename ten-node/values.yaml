@@ -78,7 +78,7 @@ host:
     enabled: false
   
   secretEnv:
-    NODE_PRIVATEKEY: "b4abdd0ffcb8cebcb4a8a2ac4e92a972724fc4534385910343e239d87c8cfd5c"
+    NODE_PRIVATEKEY: "1f2b365472a7c09e17d959810fa12f3712eef228e739273443ab6055fa926bc4"
   extraEnv: []
   service:
     type: LoadBalancer
@@ -166,17 +166,17 @@ config:
     l1:
         chainid: 1337
         blocktime: 15s
-        starthash: 0xde52869dc85dca5bdd614e82c7c141bcf8a5287a63500391379f1f707ea0525a
+        starthash: 0xb4181c03ccdbf398b2c5b5dfe707531f5c269a2e60eb0393a13cd5b8a69dc9a4
         l1contracts:
-            managementcontract: 0xea9b1570088b81b060de1a5f21d17fae723ff630
-            messagebuscontract: 0x6ecd4f00a50ee607b17941ad4afe9dfec773e5c8
+            managementcontract: 0x6E09C67ff3624bFCf7a1d9E42E5b95A7F78b4725
+            messagebuscontract: 0x2E0fCa718BA80D2d04dD99A286D944e80A3CD569
             bridgecontract: "0x0000000000000000000000000000000000000000"
     rollup:
         interval: 15m0s
         maxinterval: 10m0s
         maxsize: 131072
     sequencer:
-        p2paddress: obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000
+        p2paddress: obscuronode-0-uat-testnet.uksouth.cloudapp.azure.com:10000
     crosschain:
         interval: 6s
   node:
@@ -199,8 +199,8 @@ config:
             - obscuronode-enclave:11001
         rpctimeout: 10s
     l1:
-        websocketurl: ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000
-        l1beaconurl: dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600
+        websocketurl: ws://uat-testnet-eth2network.uksouth.cloudapp.azure.com:9000
+        l1beaconurl: uat-testnet-eth2network.uksouth.cloudapp.azure.com:12600
         l1blobarchiveurl: ""
         rpctimeout: 15s
     log:

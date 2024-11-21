@@ -26,7 +26,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ten-node.fullname" . }}-enclave
+      serviceAccountName: {{ include "ten-node.fullname" . }}-node
       securityContext:
         {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
       volumes:
@@ -184,7 +184,7 @@ spec:
             - name: HOST_L1_RPCTIMEOUT
               value: {{ .Values.config.host.l1.rpctimeout | default "15s" | quote }}
             - name: HOST_L1_BLOBARCHIVEURL
-              value: {{ .Values.config.host.l1.blobarchiveurl | default "" | quote }}
+              value: {{ .Values.config.host.l1.l1blobarchiveurl | default "" | quote }}
             - name: HOST_ENCLAVE_RPCADDRESSES
               value: {{ include "ten-node.fullname" . }}-enclave:11001
             - name: HOST_ENCLAVE_RPCTIMEOUT
