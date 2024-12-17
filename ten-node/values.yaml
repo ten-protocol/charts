@@ -23,11 +23,23 @@ enclave:
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
 
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/hostname: aks-sgxpool2-37956146-vmss000002
+  
 
   tolerations: []
 
-  affinity: {}
+  affinity: {}  # Ensure this matches the agent pool label
+
+  # affinity:
+  #   nodeAffinity:
+  #     required:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: kubernetes.io/hostname
+  #           operator: In
+  #           values:
+  #           - "aks-sgxpool2-37956146-vmss000001"  # Replace with your actual node hostname
 
   
   readinessProbe:
@@ -64,6 +76,9 @@ enclave:
   serviceAccount:
     create: true
 
+
+ # Ensure this matches the node hostname
+
 host:
   enabled: true
   replicaCount: 1
@@ -76,7 +91,7 @@ host:
     enabled: false
   livenessProbe:
     enabled: false
-  
+    
   secretEnv:
     NODE_PRIVATEKEY: "REPLACE_ME" #Private key of the node
   extraEnv: []
@@ -147,7 +162,8 @@ edb:
       operator: Exists
       effect: NoSchedule
   nodeSelector:
-    beta.kubernetes.io/os: linux
+    kubernetes.io/hostname: aks-sgxpool2-37956146-vmss000002
+  # nodeName: aks-sgxpool2-37956146-vmss000001  # Ensure this matches the node hostname
 
 config:
   network:
@@ -166,10 +182,10 @@ config:
     l1:
         chainid: 1337
         blocktime: 15s
-        starthash: 0x5312a928b64b7c9d20afd6e60ece0c07b929539f71756c38ac76e5339872d6e5
+        starthash: 0xad629f9597e21b1462b37300a9e9f2ee8e6d864d2719481521d86dadb490ed08
         l1contracts:
-            managementcontract: 0xEc6c7c29a32EfBeF5095eDBC535764D4226a624f
-            messagebuscontract: 0xd729424c9D05207c2a1E9C69fc941Ee97915ED92
+            managementcontract: 0x15Ff96b65CeD7548D68a8C6CdaEeb67763aB7077
+            messagebuscontract: 0x0A5c1FA362e77B4aE3841E8E45DFE70Cd3C12D9e
             bridgecontract: "0x0000000000000000000000000000000000000000"
     rollup:
         interval: 15m0s
@@ -182,7 +198,7 @@ config:
   node:
     nodetype: "validator"
     name: ""
-    id: REPLACE_ME #Public key of the node
+    id: "REPLACE_ME" #Public key of the node
     isgenesis: false
   host:
     db:

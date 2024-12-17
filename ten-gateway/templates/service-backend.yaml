@@ -1,0 +1,26 @@
+{{- if .Values.backend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ten-gateway.fullname" . }}-backend
+  labels:
+    {{- include "ten-gateway.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  ports:
+    - port: {{ .Values.backend.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.backend.ports.https }}
+      targetPort: https
+      protocol: TCP
+      name: https
+    - port: {{ .Values.backend.ports.websocket }}
+      targetPort: websocket
+      protocol: TCP
+      name: websocket
+  selector:
+    {{- include "ten-gateway.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+{{- end }}

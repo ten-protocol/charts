@@ -30,8 +30,10 @@ spec:
       securityContext:
         {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
       volumes:
-        # - name: enclavedata
-        #   emptyDir: {}
+        - name: enclavedata
+          hostPath:
+            path: /data/{{ .Release.Name }}/enclave-data
+            type: DirectoryOrCreate
         - name: shared-data
           emptyDir: {}
       initContainers:
@@ -199,8 +201,8 @@ spec:
             - secretRef:
                 name: {{ include "ten-node.fullname" . }}-enclave
           volumeMounts:
-            # - name: enclavedata
-            #   mountPath: /enclavedata
+            - name: enclavedata
+              mountPath: /enclavedata
             - name: shared-data
               mountPath: /shared-data
           {{- if .Values.enclave.readinessProbe.enabled }}
@@ -223,18 +225,14 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-      {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- toYaml .Values.enclave.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.enclave.affinity | nindent 8 }}
       {{- with .Values.enclave.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ . | toYaml | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.enclave.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

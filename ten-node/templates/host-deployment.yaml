@@ -212,18 +212,18 @@ spec:
             {{- with .Values.host.livenessProbe.params }}
             {{- end }}
           {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.host.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.host.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ . | toYaml | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.host.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.host.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

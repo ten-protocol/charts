@@ -1,99 +1,69 @@
-# Default values for ten-gateway.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 replicaCount: 1
 
-image:
-  repository: testnetobscuronet.azurecr.io/obscuronet/obscuro_gateway_sepolia_testnet
-  tag: latest
-  pullPolicy: IfNotPresent
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+frontend:
+  enabled: true
+  name: obscuro-gateway
+  domain: gw-dev-testnet.ten.xyz
+  image:
+    repository: testnetobscuronet.azurecr.io/obscuronet/obscuro_gateway_uat_testnet_fe
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 80
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 80
-  wsPort: 81
-
-ingress:
+backend:
   enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  name: obscuro-gateway
+  domain: rpc.gw-dev-testnet.ten.xyz
+  image:
+    repository: testnetobscuronet.azurecr.io/obscuronet/obscuro_gateway_dev_testnet
+    tag: latest
+    pullPolicy: IfNotPresent
+  ports:
+    http: 80
+    https: 443
+    websocket: 81
+  args:
+    - "ego"
+    - "run"
+    - "/home/ten/go-ten/tools/walletextension/main/main"
+    - "-host=0.0.0.0"
+    - "-port=443"
+    - "-portWS=81"
+    - "-verbose=true"
+    - "-logPath=sys_out"
+    - "-dbType=cosmosDB"
+    - "-rateLimitUserComputeTime=0"
+    - "-rateLimitWindow=1m"
+    - "-maxConcurrentRequestsPerUser=5"
+    - "-keyExchangeURL=''"
+    - "-insideEnclave=true"
+    - "-enableTLS=true"
+    - "-tlsDomain=rpc.gw-dev-testnet.ten.xyz"
+  env: 
+    OE_SIMULATION: "0"
+  dbConnectionURL: "REPLACE_ME"
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
+resources: 
+  limits:
+    cpu: 1000m
+    memory: 5Gi
+  requests:
+    cpu: 500m
+    memory: 5Gi
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
 
-env:
-  - name: OBSCURO_GATEWAY_VERSION
-    value: "467-f6b6c7332e9b4ba6c9287472155580b021bfd214"
 
-args:
-  - "-host=0.0.0.0"
-  - "-port=80"
-  - "-portWS=81"
-  - "-nodeHost=erpc.sepolia-testnet.ten.xyz"
-  - "-verbose=true"
-  - "-logPath=sys_out"
-  - "-dbType=mariaDB"
-  - "-dbConnectionURL=obscurouser:mwk1uyp5jkn.QCM_dtq@tcp(obscurogateway-mariadb-sepolia-testnet.uksouth.cloudapp.azure.com:3306)/ogdb"
-  - "-rateLimitUserComputeTime=50s"
-  - "-rateLimitWindow=1m"
-  - "-maxConcurrentRequestsPerUser=5"
