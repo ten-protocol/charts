@@ -1,6 +1,6 @@
 global:
   imagePullSecrets: []
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
 
 
 # -- Overrides the chart's name
@@ -12,9 +12,9 @@ enclave:
   enabled: true
   replicaCount: 1
   image:
-    repository: testnetobscuronet.azurecr.io/obscuronet/dev_enclave
-    tag: latest
-    pullPolicy: IfNotPresent
+    repository: testnetobscuronet.azurecr.io/obscuronet/sepolia_enclave
+    tag: "latest"
+    pullPolicy: Always
     imagePullSecrets: []
 
   autoscaling:
@@ -24,7 +24,10 @@ enclave:
     targetCPUUtilizationPercentage: 80
 
   nodeSelector:
-    kubernetes.io/hostname: aks-sgxpool2-37956146-vmss000002
+    kubernetes.io/hostname: <sgx enabled k8s node name>
+  pvc:
+    storageClass: "default"
+    size: 1Gi
   
 
   tolerations: []
@@ -83,9 +86,9 @@ host:
   enabled: true
   replicaCount: 1
   image:
-    repository: "testnetobscuronet.azurecr.io/obscuronet/dev_host"
+    repository: "testnetobscuronet.azurecr.io/obscuronet/sepolia_host"
     tag: "latest"
-    pullPolicy: "IfNotPresent"
+    pullPolicy: "Always"
     imagePullSecrets: []
   readinessProbe:
     enabled: false
@@ -93,7 +96,7 @@ host:
     enabled: false
     
   secretEnv:
-    NODE_PRIVATEKEY: "REPLACE_ME" #Private key of the node
+    NODE_PRIVATEKEY: "" #Private key of the node
   extraEnv: []
   service:
     type: LoadBalancer
@@ -109,11 +112,12 @@ host:
       containerPort: 10000
   resources:
     limits:
-      memory: 2Gi
-      cpu: 1000m
-    requests:
       memory: 1Gi
       cpu: 500m
+    requests:
+      memory: 1Gi
+      cpu: 200m
+
 
 postgresql:
   enabled: true
@@ -133,7 +137,7 @@ edb:
   image:
     repository: "ghcr.io/edgelesssys"
     tag: "v0.3.2"
-    pullPolicy: "IfNotPresent"
+    pullPolicy: "Always"
     imagePullSecrets: []
   replicas: 1
   sqlApiHost: "0.0.0.0"
@@ -162,7 +166,7 @@ edb:
       operator: Exists
       effect: NoSchedule
   nodeSelector:
-    kubernetes.io/hostname: aks-sgxpool2-37956146-vmss000002
+    kubernetes.io/hostname: <sgx enabled k8s node name>
   # nodeName: aks-sgxpool2-37956146-vmss000001  # Ensure this matches the node hostname
 
 config:
@@ -177,28 +181,28 @@ config:
         basefee: "1000000000"
         mingasprice: "1000000000"
         paymentaddress: 0xd6c9230053f45f873cb66d8a02439380a37a4fbf
-        batchexecutionlimit: "300000000000"
+        batchexecutionlimit: "30000000"
         localexecutioncap: "300000000000"
     l1:
-        chainid: 1337
+        chainid: 11155111
         blocktime: 15s
-        starthash: 0xad629f9597e21b1462b37300a9e9f2ee8e6d864d2719481521d86dadb490ed08
+        starthash: 0xdf883dff878ac74b3ea1fbcd01c799b9f4a8e50d6fde5d32a965a4422498ef7a
         l1contracts:
-            managementcontract: 0x15Ff96b65CeD7548D68a8C6CdaEeb67763aB7077
-            messagebuscontract: 0x0A5c1FA362e77B4aE3841E8E45DFE70Cd3C12D9e
+            managementcontract: 0x936738d79dc41d858f17d7E55C01c62f134E1D26
+            messagebuscontract: 0xE1305653EFBf0a8ccB617e4B6d28B2770E86c13f
             bridgecontract: "0x0000000000000000000000000000000000000000"
     rollup:
         interval: 15m0s
         maxinterval: 10m0s
         maxsize: 131072
     sequencer:
-        p2paddress: obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000
+        p2paddress: obscuronode-0-sepolia-testnet.uksouth.cloudapp.azure.com:10000
     crosschain:
         interval: 6s
   node:
     nodetype: "validator"
     name: ""
-    id: "REPLACE_ME" #Public key of the node
+    id:  #Public key of the node
     isgenesis: false
   host:
     db:
@@ -214,9 +218,9 @@ config:
             - obscuronode-enclave:11001
         rpctimeout: 10s
     l1:
-        websocketurl: ws://dev-testnet-eth2network.uksouth.cloudapp.azure.com:9000
-        l1beaconurl: dev-testnet-eth2network.uksouth.cloudapp.azure.com:12600
-        l1blobarchiveurl: ""
+        websocketurl: <l1 websocket url>
+        l1beaconurl: https://ethereum-sepolia-beacon-api.publicnode.com
+        l1blobarchiveurl: "https://eth-beacon-chain-sepolia.drpc.org/rest/"
         rpctimeout: 15s
     log:
         level: 3

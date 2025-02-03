@@ -31,9 +31,8 @@ spec:
         {{- toYaml .Values.enclave.podSecurityContext | nindent 8 }}
       volumes:
         - name: enclavedata
-          hostPath:
-            path: /data/{{ .Release.Name }}/enclave-data
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: {{ include "ten-node.fullname" . }}-enclave
         - name: shared-data
           emptyDir: {}
       initContainers:
@@ -120,6 +119,8 @@ spec:
               value: {{ .Values.config.network.batch.maxsize | default "56320" | quote }}
             - name: NETWORK_SEQUENCER_P2PADDRESS
               value: {{ .Values.config.network.sequencer.p2paddress | default "obscuronode-0-dev-testnet.uksouth.cloudapp.azure.com:10000" | quote }}
+            - name: NETWORK_SEQUENCER_SYSTEMCONTRACTSUPGRADER
+              value: {{ .Values.config.network.sequencer.systemcontractsupgrader | quote }}
             - name: NETWORK_GAS_LOCALEXECUTIONCAP
               value: {{ .Values.config.network.gas.localexecutioncap | default "300000000000" | quote }}
             - name: NETWORK_ROLLUP_MAXSIZE
