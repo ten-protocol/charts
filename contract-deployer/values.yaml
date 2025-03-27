@@ -1,7 +1,7 @@
 # Default values for contract-deployer
 
 deployer:
-  image: golang:1.20
+  image: golang:1.23.5
   gitRepo: https://github.com/ten-protocol/go-ten.git
   gitRef: main
   command: >
