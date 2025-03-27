@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-contract-deployer
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
+      restartPolicy: Never
+      initContainers:
+      - name: git-clone
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          git clone --depth 1 -b {{ .Values.deployer.gitRef }} \
+            {{ .Values.deployer.gitRepo }} /workspace
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+
+      containers:
+      - name: contract-deployer
+        image: {{ .Values.deployer.image }}
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+          cd /workspace
+          go run ./testnet/launcher/l1contractdeployer/cmd \
+            -l1_http_url=${L1_HTTP_URL} \
+            -private_key=${PRIVATE_KEY} \
+            -output_file=/output/contracts.env
+          {{- if .Values.configmap.create }}
+          kubectl create configmap {{ .Values.configmap.name }} \
+            --from-file=/output/contracts.env \
+            --dry-run=client -o yaml > /output/configmap.yaml
+          kubectl apply -f /output/configmap.yaml
+          {{- else }}
+          echo "Contract addresses:"
+          cat /output/contracts.env
+          {{- end }}
+        env:
+        - name: L1_HTTP_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-l1-secrets
+              key: l1HttpUrl
+        - name: PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-l1-secrets
+              key: accountPkWorker
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        - name: output
+          mountPath: /output
+
+      volumes:
+      - name: workspace
+        emptyDir: {}
+      - name: output
+        emptyDir: {}

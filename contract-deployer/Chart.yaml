@@ -1,0 +1,5 @@
+apiVersion: v2
+name: contract-deployer
+description: Helm chart for deploying Obscuro L1 contracts
+version: 0.1.0
+appVersion: "1.0"
