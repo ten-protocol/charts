@@ -66,3 +66,10 @@ agent5:
 openRouter:
   apiKey: ""  # Should be provided via secret
   referrer: "https://github.com/0xjba/LangChain-Agent-for-Poker"
+
+pokerAgents:
+  - key: "REPLACE_WITH_ACTUAL_KEY"
+  - key: "REPLACE_WITH_ACTUAL_KEY"
+  - key: "REPLACE_WITH_ACTUAL_KEY"
+  - key: "REPLACE_WITH_ACTUAL_KEY"
+  - key: "REPLACE_WITH_ACTUAL_KEY"
