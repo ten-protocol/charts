@@ -1,0 +1,68 @@
+# Default values for poker-agents
+replicaCount: 1
+
+image:
+  repository: testnetobscuronet.azurecr.io/obscuronet/poker-agents
+  pullPolicy: IfNotPresent
+  tag: "0.2"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Contract Addresses
+contracts:
+  stateStorage: "REPLACE_WITH_ACTUAL_ADDRESS"
+  handEvaluator: "REPLACE_WITH_ACTUAL_ADDRESS"
+  handManager: "REPLACE_WITH_ACTUAL_ADDRESS"
+  tournamentLogic: "REPLACE_WITH_ACTUAL_ADDRESS"
+  gameLogic: "REPLACE_WITH_ACTUAL_ADDRESS"
+  router: "REPLACE_WITH_ACTUAL_ADDRESS"
+  bettingContract: "REPLACE_WITH_ACTUAL_ADDRESS"
+
+# Timer Agent Configurationf3c24015227bc840424b30c70e921eb1ca483b71
+timerAgent:
+  rpc: "https://rpc.dexynth-gateway.ten.xyz/v1/?token=f3c24015227bc840424b30c70e921eb1ca483b71"
+  key: ""  # Should be provided via secret
+
+
+agent1:
+  name: "agent1"
+  rpc: "https://rpc.dexynth-gateway.ten.xyz/v1/?token=f3c24015227bc840424b30c70e921eb1ca483b71"
+  model: "anthropic/claude-3.5-sonnet"
+
+agent2:
+  name: "agent2"
+  rpc: "https://rpc.dexynth-gateway.ten.xyz/v1/?token=f3c24015227bc840424b30c70e921eb1ca483b71"
+  model: "anthropic/claude-3.5-sonnet"
+agent3:
+  name: "agent3"
+  rpc: "https://rpc.dexynth-gateway.ten.xyz/v1/?token=f3c24015227bc840424b30c70e921eb1ca483b71"
+  model: "openai/gpt-4-1106-preview"
+agent4:
+  name: "agent4"
+  rpc: "https://rpc.dexynth-gateway.ten.xyz/v1/?token=f3c24015227bc840424b30c70e921eb1ca483b71"
+  model: "meta-llama/llama-3.3-70b-instruct:free"
+agent5:
+  name: "agent5"
+  rpc: "https://rpc.dexynth-gateway.ten.xyz/v1/?token=f3c24015227bc840424b30c70e921eb1ca483b71"
+  model: "anthropic/claude-3.5-sonnet"
+
+openRouter:
+  apiKey: ""  # Should be provided via secret
+  referrer: "https://github.com/0xjba/LangChain-Agent-for-Poker"

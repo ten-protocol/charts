@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "poker-agents.fullname" . }}
+  labels:
+    {{- include "poker-agents.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "poker-agents.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "poker-agents.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            # Contract Addresses
+            - name: POKER_STATE_STORAGE_ADDRESS
+              value: {{ .Values.contracts.stateStorage | quote }}
+            - name: POKER_HAND_EVALUATOR_ADDRESS
+              value: {{ .Values.contracts.handEvaluator | quote }}
+            - name: POKER_HAND_MANAGER_ADDRESS
+              value: {{ .Values.contracts.handManager | quote }}
+            - name: POKER_TOURNAMENT_LOGIC_ADDRESS
+              value: {{ .Values.contracts.tournamentLogic | quote }}
+            - name: POKER_GAME_LOGIC_ADDRESS
+              value: {{ .Values.contracts.gameLogic | quote }}
+            - name: POKER_ROUTER_ADDRESS
+              value: {{ .Values.contracts.router | quote }}
+            - name: POKER_BETTING_CONTRACT_ADDRESS
+              value: {{ .Values.contracts.bettingContract | quote }}
+            
+            # Timer Agent
+            - name: POKER_TIMER_RPC
+              value: {{ .Values.timerAgent.rpc }}
+            - name: POKER_TIMER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: timer-key
+
+            # OpenRouter Configuration
+            - name: OPENROUTER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: openrouter-api-key
+            - name: OPENROUTER_REFERRER
+              value: {{ .Values.openRouter.referrer }}
+            - name: POKER_AGENT1_NAME
+              value: {{ .Values.agent1.name | quote }}
+            - name: POKER_AGENT1_RPC
+              value: {{ .Values.agent1.rpc | quote }}
+            - name: POKER_AGENT1_MODEL
+              value: {{ .Values.agent1.model | quote }}
+            - name: POKER_AGENT1_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: agent1-key
+
+            - name: POKER_AGENT2_NAME
+              value: {{ .Values.agent2.name | quote }}
+            - name: POKER_AGENT2_RPC
+              value: {{ .Values.agent2.rpc | quote }}
+            - name: POKER_AGENT2_MODEL
+              value: {{ .Values.agent2.model | quote }}
+            - name: POKER_AGENT2_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: agent2-key
+
+            - name: POKER_AGENT3_NAME
+              value: {{ .Values.agent3.name | quote }}
+            - name: POKER_AGENT3_RPC
+              value: {{ .Values.agent3.rpc | quote }}
+            - name: POKER_AGENT3_MODEL
+              value: {{ .Values.agent3.model | quote }}
+            - name: POKER_AGENT3_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: agent3-key
+
+            - name: POKER_AGENT4_NAME
+              value: {{ .Values.agent4.name | quote }}
+            - name: POKER_AGENT4_RPC
+              value: {{ .Values.agent4.rpc | quote }}
+            - name: POKER_AGENT4_MODEL
+              value: {{ .Values.agent4.model | quote }}
+            - name: POKER_AGENT4_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: agent4-key
+
+            - name: POKER_AGENT5_NAME
+              value: {{ .Values.agent5.name | quote }}
+            - name: POKER_AGENT5_RPC
+              value: {{ .Values.agent5.rpc | quote }}
+            - name: POKER_AGENT5_MODEL
+              value: {{ .Values.agent5.model | quote }}
+            - name: POKER_AGENT5_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: poker-agents-secrets
+                  key: agent5-key
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
