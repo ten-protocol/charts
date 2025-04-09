@@ -191,6 +191,7 @@ config:
             managementcontract: 0x936738d79dc41d858f17d7E55C01c62f134E1D26
             messagebuscontract: 0xE1305653EFBf0a8ccB617e4B6d28B2770E86c13f
             bridgecontract: "0x0000000000000000000000000000000000000000"
+            crosschain: "0x602De10cf1419Debc5F723ad7CedFe05322d9539"
     rollup:
         interval: 15m0s
         maxinterval: 10m0s
