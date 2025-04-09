@@ -180,24 +180,27 @@ config:
     gas:
         basefee: "1000000000"
         mingasprice: "1000000000"
-        paymentaddress: 0xd6c9230053f45f873cb66d8a02439380a37a4fbf
+        paymentaddress: "0x0000000000000000000000000000000000000000"
         batchexecutionlimit: "30000000"
         localexecutioncap: "300000000000"
     l1:
         chainid: 11155111
         blocktime: 15s
-        starthash: 0xdf883dff878ac74b3ea1fbcd01c799b9f4a8e50d6fde5d32a965a4422498ef7a
+        starthash: "0x0000000000000000000000000000000000000000"
         l1contracts:
-            managementcontract: 0x936738d79dc41d858f17d7E55C01c62f134E1D26
-            messagebuscontract: 0xE1305653EFBf0a8ccB617e4B6d28B2770E86c13f
-            bridgecontract: "0x0000000000000000000000000000000000000000"
-            crosschain: "0x602De10cf1419Debc5F723ad7CedFe05322d9539"
+            management: "0x0000000000000000000000000000000000000000"
+            messagebus: "0x0000000000000000000000000000000000000000"
+            bridge: "0x0000000000000000000000000000000000000000"
+            crosschain: "0x0000000000000000000000000000000000000000"
+            rollup: "0x0000000000000000000000000000000000000000"
+            enclaveRegistry: "0x0000000000000000000000000000000000000000"
     rollup:
         interval: 15m0s
         maxinterval: 10m0s
         maxsize: 131072
     sequencer:
         p2paddress: obscuronode-0-sepolia-testnet.uksouth.cloudapp.azure.com:10000
+        systemcontractsupgrader: "0x0000000000000000000000000000000000000000"
     crosschain:
         interval: 6s
   node:

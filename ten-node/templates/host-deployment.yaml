@@ -101,11 +101,11 @@ spec:
             - name: NETWORK_ROLLUP_INTERVAL
               value: {{ .Values.config.network.rollup.interval | default "15m0s" | quote }}
             - name: NETWORK_L1_CONTRACTS_BRIDGE
-              value: {{ .Values.config.network.l1.l1contracts.bridgecontract | default "0x0000000000000000000000000000000000000000" | quote }}
+              value: {{ .Values.config.network.l1.l1contracts.bridge | default "0x0000000000000000000000000000000000000000" | quote }}
             - name: NETWORK_GENESIS
               value: {{ .Values.config.network.genesisjson | default "{}" | quote }}
             - name: NETWORK_L1_CONTRACTS_MESSAGEBUS
-              value: {{ .Values.config.network.l1.l1contracts.messagebuscontract | default "" | quote }}
+              value: {{ .Values.config.network.l1.l1contracts.messagebus | default "" | quote }}
             - name: NETWORK_BATCH_MAXSIZE
               value: {{ .Values.config.network.batch.maxsize | default "56320" | quote }}
             - name: NETWORK_SEQUENCER_P2PADDRESS
@@ -117,7 +117,7 @@ spec:
             - name: NETWORK_ROLLUP_MAXSIZE
               value: {{ .Values.config.network.rollup.maxsize | default "131072" | quote }}
             - name: NETWORK_L1_CONTRACTS_MANAGEMENT
-              value: {{ .Values.config.network.l1.l1contracts.managementcontract | default "" | quote }}
+              value: {{ .Values.config.network.l1.l1contracts.management | default "" | quote }}
             - name: NETWORK_L1_BLOCKTIME
               value: {{ .Values.config.network.l1.blocktime | default "15s" | quote }}
             - name: NETWORK_GAS_MINGASPRICE
