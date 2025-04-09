@@ -113,6 +113,8 @@ spec:
               value: {{ .Values.config.network.l1.l1contracts.bridge | default "0x0000000000000000000000000000000000000000" | quote }}
             - name: NETWORK_L1_CONTRACTS_ENCLAVEREGISTRY
               value: {{ .Values.config.network.l1.l1contracts.enclaveregistry | default "" | quote }}
+            - name: NETWORK_L1_CONTRACTS_NETWORKCONFIG
+              value: {{ .Values.config.network.l1.l1contracts.networkconfig | default "" | quote }}
             - name: NETWORK_GENESIS
               value: {{ .Values.config.network.genesisjson | default "{}" | quote }}
             - name: NETWORK_L1_CONTRACTS_MESSAGEBUS

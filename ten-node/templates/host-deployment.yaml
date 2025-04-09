@@ -118,6 +118,7 @@ spec:
               value: {{ .Values.config.network.rollup.maxsize | default "131072" | quote }}
             - name: NETWORK_L1_CONTRACTS_MANAGEMENT
               value: {{ .Values.config.network.l1.l1contracts.management | default "" | quote }}
+            
             - name: NETWORK_L1_BLOCKTIME
               value: {{ .Values.config.network.l1.blocktime | default "15s" | quote }}
             - name: NETWORK_GAS_MINGASPRICE
@@ -136,7 +137,10 @@ spec:
               value: {{ .Values.config.network.batch.interval | default "1s" | quote }}
             - name: NETWORK_L1_CONTRACTS_CROSSCHAIN
               value: {{ .Values.config.network.l1.l1contracts.crosschain | default "" | quote }}
-        
+            - name: NETWORK_L1_CONTRACTS_NETWORKCONFIG
+              value: {{ .Values.config.network.l1.l1contracts.networkconfig | default "" | quote }}
+            - name: NETWORK_L1_CONTRACTS_ROLLUP
+              value: {{ .Values.config.network.l1.l1contracts.rollup | default "" | quote }}
             - name: NODE_ID
               value: {{ .Values.config.node.id | default "0xd6bcf7694fc4ed7c7c61b3fc5757919e237d0bf5" | quote }}
             - name: NODE_ISGENESIS
