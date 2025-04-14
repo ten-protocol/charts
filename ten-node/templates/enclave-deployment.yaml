@@ -96,8 +96,6 @@ spec:
               value: {{ .Values.config.enclave.log.path | default "sys_out" | quote }}
             - name: ENCLAVE_DEBUG_ENABLEDEBUGNAMESPACE
               value: {{ .Values.config.enclave.debug.enabledebugnamespace | quote | default "true" }}
-            - name: NODE_PRIVATEKEY
-              value: {{ .Values.host.secretEnv.NODE_PRIVATEKEY | quote }}
             # network env vars
             - name: NETWORK_GAS_BASEFEE
               value: {{ .Values.config.network.gas.basefee | default "1000000000" | quote }}
