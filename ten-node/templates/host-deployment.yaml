@@ -138,7 +138,7 @@ spec:
             - name: NETWORK_L1_CONTRACTS_CROSSCHAIN
               value: {{ .Values.config.network.l1.l1contracts.crosschain | default "" | quote }}
             - name: NETWORK_L1_CONTRACTS_NETWORKCONFIG
-              value: {{ .Values.config.network.l1.l1contracts.networkconfig | default "" | quote }}
+              value: {{ .Values.config.network.l1.l1contracts.networkConfig | default "" | quote }}
             - name: NETWORK_L1_CONTRACTS_ROLLUP
               value: {{ .Values.config.network.l1.l1contracts.rollup | default "" | quote }}
             - name: NODE_ID
@@ -177,7 +177,8 @@ spec:
               value: {{ .Values.config.host.l1.websocketurl | default "" | quote }}
             - name: HOST_L1_RPCTIMEOUT
               value: {{ .Values.config.host.l1.rpctimeout | default "15s" | quote }}
-            
+            - name: NETWORK_L1_CONTRACTS_ENCLAVEREGISTRY
+              value: {{ .Values.config.network.l1.l1contracts.enclaveRegistry | default "" | quote }}
             - name: HOST_ENCLAVE_RPCADDRESSES
               value: {{ include "ten-node.fullname" . }}-enclave:11001
             - name: HOST_ENCLAVE_RPCTIMEOUT
