@@ -1,24 +1,16 @@
-# Default values for contract-deployer
+image:
+  repository: testnetobscuronet.azurecr.io/obscuronet/l1contractdeployer
+  tag: 1.2.-beta
 
-deployer:
-  image: golang:1.23.5
-  gitRepo: https://github.com/ten-protocol/go-ten.git
-  gitRef: main
-  command: >
-    cd /workspace &&
-    go run ./testnet/launcher/l1contractdeployer/cmd
-    -l1_http_url=${L1_HTTP_URL}
-    -private_key=${PRIVATE_KEY}
-    -output_file=/output/contracts.env
+deploy:
+  dockerImage: testnetobscuronet.azurecr.io/obscuronet/l1contractdeployer:1.2.-beta
+  networkName: dev-testnet          # Update this if you want a default testnet
+  outputEnv: /usr/local/bin/.env       # Adjust path if needed
 
-l1:
-  httpUrl: ""  # Set via --set or secrets
-  privateKey: "" # Set via --set or secrets
-
-configmap:
-  name: obscuro-contracts
-  create: true
-
-rbac:
-  create: true
-  serviceAccountName: contract-deployer-sa
+secrets:
+  azureClientId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  azureClientSecret: "your-client-secret"
+  azureTenantId: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+  azureKeyVaultUrl: "https://your-keyvault.vault.azure.net/"
+  l1HttpUrl: "https://mainnet.infura.io/v3/your-api-key"
+  deployerPrivateKey: "0xabcdef123456..."
