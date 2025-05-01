@@ -32,7 +32,7 @@ spec:
           args:
             - |
               echo "Waiting for Docker daemon..."
-              timeout 60 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done' || {
+              timeout 600 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done' || {
                 echo "Timed out waiting for Docker"
                 exit 1
               }
