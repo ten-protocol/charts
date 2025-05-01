@@ -43,7 +43,7 @@ spec:
               exec /usr/local/bin/l1contractdeployer
           env:
             - name: DOCKER_HOST
-              value: "tcp://localhost:2375"
+              value: "tcp://0.0.0.0:2375"
             - name: DOCKER_API_VERSION
               value: "1.45"
             - name: AZURE_CLIENT_ID
