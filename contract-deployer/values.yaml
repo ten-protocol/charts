@@ -1,6 +1,6 @@
 image:
-  repository: your-registry/l1contractdeployer
-  tag: ""
+  repository: testnetobscuronet.azurecr.io/obscuronet/l1contractdeployer
+  tag: 1.2.-beta
   pullPolicy: IfNotPresent
 
 deploy:
