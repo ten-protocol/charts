@@ -31,6 +31,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
+              apk add --no-cache docker-cli
               echo "Waiting for Docker daemon..."
               # Check port using bash builtins if nc isn't available
               timeout 600 sh -c 'until (echo > /dev/tcp/localhost/2375) >/dev/null 2>&1; do sleep 1; done' || {
