@@ -33,7 +33,7 @@ spec:
             - |
               echo "Waiting for Docker daemon..."
               # Check port using bash builtins if nc isn't available
-              timeout 600 bash -c 'until (echo > /dev/tcp/localhost/2375) >/dev/null 2>&1; do sleep 1; done' || {
+              timeout 600 sh -c 'until (echo > /dev/tcp/localhost/2375) >/dev/null 2>&1; do sleep 1; done' || {
                 echo "Timed out waiting for Docker port"
                 exit 1
                 }
