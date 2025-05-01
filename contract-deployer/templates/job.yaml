@@ -10,6 +10,8 @@ spec:
     metadata:
       labels:
         {{- include "contract-deployer.selectorLabels" . | nindent 8 }}
+    securityContext:
+        privileged: true
     spec:
       containers:
         - name: dind
