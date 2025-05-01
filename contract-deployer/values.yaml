@@ -1,16 +1,30 @@
 image:
-  repository: testnetobscuronet.azurecr.io/obscuronet/l1contractdeployer
-  tag: 1.2.-beta
+  repository: your-registry/l1contractdeployer
+  tag: ""
+  pullPolicy: IfNotPresent
 
 deploy:
-  dockerImage: testnetobscuronet.azurecr.io/obscuronet/l1contractdeployer:1.2.-beta
-  networkName: dev-testnet          # Update this if you want a default testnet
-  outputEnv: /usr/local/bin/.env       # Adjust path if needed
+  dockerImage: ""
+  networkName: ""
+  outputEnv: ""
 
 secrets:
-  azureClientId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  azureClientSecret: "your-client-secret"
-  azureTenantId: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
-  azureKeyVaultUrl: "https://your-keyvault.vault.azure.net/"
-  l1HttpUrl: "https://mainnet.infura.io/v3/your-api-key"
-  deployerPrivateKey: "0xabcdef123456..."
+  azureClientId: ""
+  azureClientSecret: ""
+  azureTenantId: ""
+  azureKeyVaultUrl: ""
+  l1HttpUrl: ""
+  deployerPrivateKey: ""
+
+dind:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+backoffLimit: 1

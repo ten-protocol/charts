@@ -1,21 +1,21 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "fullname" . }}-deployer
+  name: {{ include "contract-deployer.fullname" . }}-deployer
   labels:
-    {{- include "labels" . | nindent 4 }}
+    {{- include "contract-deployer.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
-  backoffLimit: 1
+  backoffLimit: {{ .Values.backoffLimit | default 1 }}
   template:
     metadata:
       labels:
-        {{- include "labels" . | nindent 8 }}
+        {{- include "contract-deployer.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        # DinD Sidecar Container
         - name: dind
           image: docker:dind
           securityContext:
@@ -26,16 +26,22 @@ spec:
           volumeMounts:
             - name: dind-storage
               mountPath: /var/lib/docker
-          readinessProbe:
-            exec:
-              command: ["docker", "info"]
-            initialDelaySeconds: 5
-            periodSeconds: 2
+          resources:
+            {{- toYaml .Values.dind.resources | nindent 12 }}
 
-        # Main Contract Deployer Container
-        - name: contract-deployer
+        - name: deployer
           image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for Docker daemon..."
+              timeout 60 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done' || {
+                echo "Timed out waiting for Docker"
+                exit 1
+              }
+              echo "Starting contract deployer..."
+              exec /usr/local/bin/l1contractdeployer
           env:
             - name: DOCKER_HOST
               value: "tcp://localhost:2375"
@@ -44,17 +50,17 @@ spec:
             - name: AZURE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.name | default (include "fullname" .) }}-secrets
+                  name: {{ include "contract-deployer.fullname" . }}-secrets
                   key: azureClientId
             - name: AZURE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.name | default (include "fullname" .) }}-secrets
+                  name: {{ include "contract-deployer.fullname" . }}-secrets
                   key: azureClientSecret
             - name: AZURE_TENANT_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.name | default (include "fullname" .) }}-secrets
+                  name: {{ include "contract-deployer.fullname" . }}-secrets
                   key: azureTenantId
             - name: DEPLOY_DOCKERIMAGE
               value: {{ .Values.deploy.dockerImage | quote }}
@@ -63,53 +69,23 @@ spec:
             - name: DEPLOY_OUTPUTAZUREKV
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.name | default (include "fullname" .) }}-secrets
+                  name: {{ include "contract-deployer.fullname" . }}-secrets
                   key: azureKeyVaultUrl
             - name: DEPLOY_OUTPUTENV
               value: {{ .Values.deploy.outputEnv | quote }}
             - name: DEPLOY_L1_RPCADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.name | default (include "fullname" .) }}-secrets
+                  name: {{ include "contract-deployer.fullname" . }}-secrets
                   key: l1HttpUrl
             - name: DEPLOY_L1_DEPLOYERPK
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.name | default (include "fullname" .) }}-secrets
+                  name: {{ include "contract-deployer.fullname" . }}-secrets
                   key: deployerPrivateKey
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "Waiting for Docker daemon to be ready..."
-              timeout 60 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done' || {
-                echo "Timed out waiting for Docker daemon"
-                exit 1
-              }
-              echo "Starting contract deployer..."
-              exec /usr/local/bin/l1contractdeployer
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            - name: docker-certs
-              mountPath: /certs/client
-              readOnly: true
-
       volumes:
         - name: dind-storage
           emptyDir: {}
-        - name: docker-certs
-          emptyDir: {}
-
       restartPolicy: Never
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
