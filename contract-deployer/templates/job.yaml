@@ -32,10 +32,11 @@ spec:
           args:
             - |
               echo "Waiting for Docker daemon..."
-              timeout 600 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done' || {
-                echo "Timed out waiting for Docker"
+              # Check port using bash builtins if nc isn't available
+              timeout 600 bash -c 'until (echo > /dev/tcp/localhost/2375) >/dev/null 2>&1; do sleep 1; done' || {
+                echo "Timed out waiting for Docker port"
                 exit 1
-              }
+                }
               echo "Starting contract deployer..."
               exec /usr/local/bin/l1contractdeployer
           env:
