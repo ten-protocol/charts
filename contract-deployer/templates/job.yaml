@@ -7,11 +7,29 @@ spec:
   template:
     spec:
       containers:
+        # DinD Sidecar (Docker daemon running in the pod)
+        - name: dind
+          image: docker:dind
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR  # Disable TLS for simpler setup (dev only)
+              value: ""
+          volumeMounts:
+            - name: dind-storage
+              mountPath: /var/lib/docker
+
+        # Your main contract deployer container
         - name: contract-deployer
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           env:
+            # Connect to the DinD sidecar
+            - name: DOCKER_HOST
+              value: "tcp://localhost:2375"
             - name: DOCKER_API_VERSION
               value: "1.45"
+
+            # Your original environment variables
             - name: AZURE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
@@ -48,16 +66,15 @@ spec:
                 secretKeyRef:
                   name: deploy-secrets
                   key: deployerPrivateKey
+
           imagePullPolicy: IfNotPresent
           resources:
             limits:
               memory: "256Mi"
               cpu: "500m"
-          volumeMounts:
-            - name: docker-socket
-              mountPath: /var/run/docker.sock
+
       volumes:
-        - name: docker-socket
-          hostPath:
-            path: /var/run/docker.sock
+        - name: dind-storage
+          emptyDir: {}
+
       restartPolicy: Never
