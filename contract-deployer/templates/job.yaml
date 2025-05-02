@@ -10,8 +10,6 @@ spec:
     metadata:
       labels:
         {{- include "contract-deployer.selectorLabels" . | nindent 8 }}
-    securityContext:
-        privileged: true
     spec:
       containers:
         - name: dind
@@ -21,6 +19,8 @@ spec:
           env:
             - name: DOCKER_TLS_CERTDIR
               value: ""
+          command: ["dockerd-entrypoint.sh"]
+          args: ["--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
           volumeMounts:
             - name: dind-storage
               mountPath: /var/lib/docker
@@ -34,18 +34,12 @@ spec:
           args:
             - |
               apk add --no-cache docker-cli
-              # echo "Waiting for Docker daemon..."
-              # # Check port using bash builtins if nc isn't available
-              # timeout 600 sh -c 'until (echo > /dev/tcp/localhost/2375) >/dev/null 2>&1; do sleep 1; done' || {
-              #   echo "Timed out waiting for Docker port"
-              #   exit 1
-              #   }
               sleep 60
               echo "Starting contract deployer..."
               exec /usr/local/bin/l1contractdeployer
           env:
             - name: DOCKER_HOST
-              value: "tcp://0.0.0.0:2375"
+              value: "tcp://localhost:2375"
             - name: DOCKER_API_VERSION
               value: "1.45"
             - name: AZURE_CLIENT_ID
