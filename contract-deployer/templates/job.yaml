@@ -34,6 +34,7 @@ spec:
           args:
             - |
               apk add --no-cache docker-cli
+              export DOCKER_HOST=tcp://127.0.0.1:2375
               sleep 60
               echo "Starting contract deployer..."
               exec /usr/local/bin/l1contractdeployer
